@@ -1,4 +1,4 @@
-package servidor;
+package trabalho.Uber.src.servidor;
 
 import java.net.ServerSocket;
 import java.net.Socket;

@@ -1,10 +1,13 @@
-package servidor;
+package trabalho.Uber.src.servidor;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.Queue;
+
+import trabalho.Uber.src.commom_class.Motorista;
+import trabalho.Uber.src.commom_class.Passageiro;
 
 public class UberService implements Runnable{
     Socket cliente;

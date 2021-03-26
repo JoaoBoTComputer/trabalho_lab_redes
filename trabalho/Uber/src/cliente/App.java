@@ -1,12 +1,12 @@
-package cliente;
+package trabalho.Uber.src.cliente;
 
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Scanner;
 
-import servidor.Motorista;
-import servidor.Passageiro;
+import trabalho.Uber.src.commom_class.Motorista;
+import trabalho.Uber.src.commom_class.Passageiro;
 
 public class App {
     static Scanner teclado = new Scanner(System.in);

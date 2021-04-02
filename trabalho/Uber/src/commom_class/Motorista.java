@@ -1,24 +1,17 @@
-package trabalho.Uber.src.commom_class;
+package commom_class;
+import java.net.Socket;
 
-import java.io.Serializable;
-
-public class Motorista implements Serializable{
-    private String nome;
+public class Motorista extends Usuario{
     private String placa;
 
-    public Motorista(String nome,String placa){
-        this.nome = nome;
+
+    public Motorista(String nome,String placa,Socket cliente){
+        super(nome,cliente);
         this.placa = placa;
+
     }
 
     public String getPlaca() {
         return placa;
     }
-
-    public String getNome() {
-        return nome;
-    }
-  
-
-
 }

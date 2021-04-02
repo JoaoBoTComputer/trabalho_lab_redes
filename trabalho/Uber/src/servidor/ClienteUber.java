@@ -1,4 +1,4 @@
-package trabalho.Uber.src.servidor;
+package servidor;
 
 import java.io.Serializable;
 

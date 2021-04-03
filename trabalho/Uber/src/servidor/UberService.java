@@ -57,19 +57,39 @@ public class UberService implements Runnable{
         }
         else{
             Motorista motorista = filaMotoristas.poll();
-            out.writeObject("200");
-            out.writeObject(motorista.getNome());
-            out.writeObject(motorista.getPlaca());
-            out.writeObject(motorista.getCliente().getLocalSocketAddress());
-            out.writeObject(motorista.getCliente().getLocalPort());
-            out.flush();
-            out.close();
-
             ObjectOutputStream outMotorista = new ObjectOutputStream(motorista.getCliente().getOutputStream());
-            
             outMotorista.writeObject("200");
-            outMotorista.writeObject("Nome passageiro :"+passageiro.getNome());
             outMotorista.flush();
+
+
+            ObjectInputStream inputMotorista = new ObjectInputStream(motorista.getCliente().getInputStream());
+
+
+
+            try {
+                if(inputMotorista.readObject().toString().equals("200")){
+                    System.out.println("Recebi 200 do motorista!");
+                    int portMotoristaListenning = Integer.parseInt(inputMotorista.readObject().toString());
+                    // // inputMotorista.close();
+                    // outMotorista.writeObject("Nome passageiro :"+passageiro.getNome());
+                    // outMotorista.flush();
+                    out.writeObject("200");
+                    out.writeObject(motorista.getNome());
+                    out.writeObject(motorista.getPlaca());
+                    out.writeObject(motorista.getCliente().getLocalAddress());
+                    out.writeObject(portMotoristaListenning);
+                    out.flush();
+                    out.close();
+                }
+            } catch (ClassNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+           
+
+          
+
             
 
         }

@@ -1,16 +1,26 @@
 package cliente;
 
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketOption;
 import java.util.Scanner;
+
+import jdk.net.Sockets;
 
 
 public class App  {
+
+    //GERENCIAR PORTAS PARA PEER TO PEER PASSAGEIRO E MOTORISTA
+    //POR CONTA DE ESTARMOS UTILIZANDO 
+
 
     //tipoUsuario=0 implica igual Motorista
     //tipoUsuario=1 implica igual usuario
@@ -36,43 +46,7 @@ public class App  {
         if(tipoUsuario == 1)
             buscarMotorista();
         else{
-            System.out.println("Aqui!");
-            boolean teste = true;
-            ObjectInputStream sCliIn = new ObjectInputStream(cliente.getInputStream());
-            String strMsg;
-            try {
-                strMsg = sCliIn.readObject().toString();
-
-                if(strMsg.equals("200")){
-                    System.out.println("merda");
-                    new Thread( new Runnable(){
-
-                        @Override
-                        public void run() {
-                           System.out.println("thread1 do motorista que mantera a comunicação com Uber");
-                            while(true);
-                        }
-                        
-                    }).start();;
-
-                    new Thread(new Runnable(){
-
-                        @Override
-                        public void run() {
-                            System.out.println("thread1 do motorista que mantera a comunicação com Passageiro");
-                            while(true);
-                            
-                        }
-                        
-                    }).start();
-
-                    System.out.println("Essa thread é a principal e foi encerrada");
-                }
-
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-          
+            esperarPassageiro();
         }
 
     }
@@ -98,16 +72,21 @@ public class App  {
                 else if (strMsg.equals("200")){
 
                     String nome, placa, enderecoIP;
-                    short porta;
+                    int porta;
                     System.out.println("Motorista encontrado");
                     
                     nome = sCliIn.readObject().toString();
                     placa = sCliIn.readObject().toString();
-                    enderecoIP = sCliIn.readObject().toString();
-                    porta = Short.parseShort(sCliIn.readObject().toString());
+                    enderecoIP = sCliIn.readObject().toString().replace("/","");
+                    porta = Integer.parseInt(sCliIn.readObject().toString());
                     
                     System.out.println("Nome motorista: "+nome);
                     System.out.println("Placa carro: "+placa);
+
+
+                
+                    Socket coneccaoMotorista = new Socket(enderecoIP,porta);
+                    System.out.println("Inicializou peer to peer com o motorista!"+enderecoIP+"Porta:"+porta);
                 }
                 
             } catch (ClassNotFoundException e) {
@@ -149,4 +128,77 @@ public class App  {
         }
     }
 
+    private void esperarPassageiro() throws IOException{
+        
+        ObjectInputStream sCliIn = new ObjectInputStream(cliente.getInputStream());
+        String strMsg;
+        
+        try{
+            strMsg = sCliIn.readObject().toString();
+
+            if(strMsg.equals("200")){
+                new Thread( new Runnable(){
+
+                    @Override
+                    public void run() {
+                        ServerSocket servidorMotorista = null;
+                        try {
+                            servidorMotorista = new ServerSocket(0);
+                            int portMotoristaServidor =  servidorMotorista.getLocalPort();
+
+                            System.out.println("Servidor motorista escurando na porta: "+portMotoristaServidor);
+
+                            ObjectOutputStream sendToUber = new ObjectOutputStream(cliente.getOutputStream());
+
+                            // PrintWriter sendToUber = new PrintWriter(cliente.getOutputStream());
+
+                            sendToUber.writeObject("200");
+                            sendToUber.writeObject(portMotoristaServidor);
+                            sendToUber.flush();
+
+                            // BufferedWriter sendToUber = new BufferedWriter(new OutputStreamWriter(cliente.getOutputStream()));
+
+                            Socket coneccaoPassageiro = servidorMotorista.accept();
+                            System.out.println("Passageiro conectado!");
+
+
+                        } catch (IOException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                        finally{
+                            try {
+                                if(servidorMotorista !=null)
+                                    servidorMotorista.close();
+                            } catch (IOException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+                        }
+
+                        System.out.println("thread1 do motorista que mantera a comunicação com Uber");
+                        while(true);
+                    }
+
+                }).start();;
+
+                new Thread(new Runnable(){
+
+                    @Override
+                    public void run() {
+                        System.out.println("thread1 do motorista que mantera a comunicação com Passageiro");
+                        while(true);
+                    }
+
+                }).start();
+
+                System.out.println("Essa thread é a principal e foi encerrada");
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+
+    }
 }
+
